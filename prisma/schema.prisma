@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int           @id @default(autoincrement())
+  fullname    String
+  username    String        @unique
+  email       String        @unique
+  password    String
+  role        Int
+  created_at  DateTime      @default(now())
+  updated_at  DateTime      @updatedAt
+  LogActivity LogActivity[]
+  Inventory   Inventory[]
+  Transaction Transaction[]
+}
+
+model LogActivity {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  name       String
+  desc       String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  User       User     @relation(fields: [user_id], references: [id])
+}
+
+model Supplier {
+  id         Int      @id @default(autoincrement())
+  name       String
+  contact    String
+  address    String
+  desc       String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Category {
+  id         Int         @id @default(autoincrement())
+  name       String
+  desc       String?
+  created_at DateTime    @default(now())
+  updated_at DateTime    @updatedAt
+  Inventory  Inventory[]
+}
+
+model Inventory {
+  id                Int                 @id @default(autoincrement())
+  name              String
+  price             Int
+  qty               Int
+  category_id       Int
+  created_by        Int
+  created_at        DateTime            @default(now())
+  updated_at        DateTime            @updatedAt
+  Category          Category            @relation(fields: [category_id], references: [id])
+  User              User                @relation(fields: [created_by], references: [id])
+  TransactionDetail TransactionDetail[]
+}
+
+model Transaction {
+  id                Int                 @id @default(autoincrement())
+  status            Int
+  desc              String?
+  created_by        Int
+  created_at        DateTime            @default(now())
+  updated_at        DateTime            @updatedAt
+  User              User                @relation(fields: [created_by], references: [id])
+  TransactionDetail TransactionDetail[]
+}
+
+model TransactionDetail {
+  id             Int         @id @default(autoincrement())
+  qty            Int
+  transaction_id Int
+  inventory_id   Int
+  created_by     Int
+  created_at     DateTime    @default(now())
+  updated_at     DateTime    @updatedAt
+  Transaction    Transaction @relation(fields: [transaction_id], references: [id])
+  Inventory      Inventory   @relation(fields: [inventory_id], references: [id])
+}
